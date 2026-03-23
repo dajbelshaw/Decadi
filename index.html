@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Le Calendrier Républicain</title>
+    <title>Décadi</title>
     <link rel="preconnect" href="https://fonts.bunny.net">
     <link href="https://fonts.bunny.net/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,600&family=Crimson+Text:ital,wght@0,400;1,400&display=swap" rel="stylesheet">
     <style>
@@ -68,7 +68,7 @@
         #overlay {
             position: absolute;
             inset: 0;
-            background: radial-gradient(ellipse at center, rgba(0,0,0,0.35) 0%, rgba(0,0,0,0.7) 100%);
+            background: radial-gradient(ellipse at center, rgba(0,0,0,0.62) 0%, rgba(0,0,0,0.85) 100%);
             z-index: 1;
         }
 
@@ -793,7 +793,7 @@ function render() {
     if (rep.isComplementary) {
         const comp = SANSCULOTTIDES[rep.day - 1];
         setSeasonalGradient('autumn');
-        document.title = `${comp[0]} — Le Calendrier Républicain`;
+        document.title = `${comp[0]} — Décadi`;
 
         content.appendChild(el('div', 'complementary-badge', 'Jour complémentaire', 'fr'));
         content.appendChild(el('div', 'rural-name complementary-title', comp[0], 'fr'));
@@ -821,7 +821,7 @@ function render() {
         const wikiTerm = dayData[2] || dayData[1];
 
         setSeasonalGradient(month.suffix);
-        document.title = `${month.fr} ${rep.day} — Le Calendrier Républicain`;
+        document.title = `${month.fr} ${rep.day} — Décadi`;
 
         // Two-column header: month/meaning left, day number/decade right
         const dateHeader = el('div', 'date-header');
