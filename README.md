@@ -28,4 +28,4 @@ Background images are fetched at runtime from [Wikimedia Commons](https://common
 
 ## Licence
 
-MIT
+[AGPL-3.0](LICENSE.md)
