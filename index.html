@@ -4,9 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Le Calendrier Républicain</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400;1,600&family=Crimson+Text:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.bunny.net">
+    <link href="https://fonts.bunny.net/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,600&family=Crimson+Text:ital,wght@0,400;1,400&display=swap" rel="stylesheet">
     <style>
         *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
 
@@ -15,6 +14,12 @@
             --gold: #C9A96E;
             --gold-light: #D4BA85;
             --dark: #1a1a1a;
+            --muted: #8E8A84;
+
+            --season-autumn: linear-gradient(160deg, #4A2511 0%, #8B4513 30%, #A0522D 60%, #6B3410 100%);
+            --season-winter: linear-gradient(160deg, #1B2838 0%, #2C3E50 30%, #34495E 60%, #1a2530 100%);
+            --season-spring: linear-gradient(160deg, #1a3a1a 0%, #2D572C 30%, #3B6B3A 60%, #1e4a1e 100%);
+            --season-summer: linear-gradient(160deg, #4A3600 0%, #7A5C00 30%, #8B6914 60%, #5A4200 100%);
         }
 
         html, body {
@@ -32,9 +37,6 @@
             position: relative;
             width: 100%;
             height: 100%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
         }
 
         #background {
@@ -45,6 +47,7 @@
             background-repeat: no-repeat;
             transition: opacity 1.5s ease;
             opacity: 0;
+            will-change: opacity;
         }
 
         #background.loaded {
@@ -54,8 +57,13 @@
         #seasonal-bg {
             position: absolute;
             inset: 0;
-            transition: opacity 1.5s ease;
+            will-change: opacity;
         }
+
+        #seasonal-bg[data-season="autumn"] { background: var(--season-autumn); }
+        #seasonal-bg[data-season="winter"] { background: var(--season-winter); }
+        #seasonal-bg[data-season="spring"] { background: var(--season-spring); }
+        #seasonal-bg[data-season="summer"] { background: var(--season-summer); }
 
         #overlay {
             position: absolute;
@@ -64,12 +72,52 @@
             z-index: 1;
         }
 
-        #content {
-            position: relative;
+        .loading-spinner {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 30px;
+            height: 30px;
+            border: 2px solid rgba(201,169,110,0.2);
+            border-top-color: var(--gold);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
             z-index: 2;
-            text-align: center;
-            padding: 2rem;
+        }
+
+        @keyframes spin {
+            to { transform: translate(-50%, -50%) rotate(360deg); }
+        }
+
+        main {
+            position: absolute;
+            inset: 0;
+            z-index: 3;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .sr-only {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            margin: -1px;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            white-space: nowrap;
+            border: 0;
+        }
+
+        #content {
+            margin: auto;
+            text-align: left;
+            padding: 2rem 3rem;
             max-width: 700px;
+            width: 100%;
             opacity: 0;
             transform: translateY(10px);
             animation: fadeUp 1.2s ease 0.3s forwards;
@@ -89,6 +137,24 @@
             opacity: 0.85;
         }
 
+        /* Two-column date header: month left, day number right */
+        .date-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .date-header-left {
+            min-width: 0;
+        }
+
+        .date-header-right {
+            text-align: right;
+            flex-shrink: 0;
+        }
+
         .month-name {
             font-family: 'Playfair Display', serif;
             font-size: clamp(2.5rem, 6vw, 4.5rem);
@@ -97,6 +163,7 @@
             text-transform: uppercase;
             line-height: 1.1;
             margin-bottom: 0.3rem;
+            text-shadow: 0 1px 4px rgba(0,0,0,0.4);
         }
 
         .month-meaning {
@@ -104,25 +171,24 @@
             font-style: italic;
             font-size: 1.15rem;
             color: var(--gold-light);
-            margin-bottom: 2rem;
             opacity: 0.9;
         }
 
         .day-number {
             font-family: 'Playfair Display', serif;
-            font-size: clamp(4rem, 12vw, 8rem);
+            font-size: clamp(4rem, 10vw, 7rem);
             font-weight: 700;
             line-height: 1;
-            margin-bottom: 0.1rem;
+            margin-bottom: 0.2rem;
+            text-shadow: 0 1px 4px rgba(0,0,0,0.4);
         }
 
         .decade-day {
             font-family: 'Crimson Text', serif;
-            font-size: 1.1rem;
+            font-size: 1rem;
             letter-spacing: 0.15em;
             text-transform: uppercase;
             color: var(--gold-light);
-            margin-bottom: 2rem;
             opacity: 0.85;
         }
 
@@ -130,7 +196,7 @@
             width: 60px;
             height: 1px;
             background: var(--gold);
-            margin: 0 auto 1.2rem;
+            margin-bottom: 1.2rem;
             opacity: 0.6;
         }
 
@@ -140,6 +206,7 @@
             font-weight: 600;
             font-style: italic;
             margin-bottom: 0.3rem;
+            text-shadow: 0 1px 4px rgba(0,0,0,0.4);
         }
 
         .rural-english {
@@ -155,8 +222,7 @@
             font-size: 0.85rem;
             letter-spacing: 0.1em;
             text-transform: uppercase;
-            color: var(--cream);
-            opacity: 0.5;
+            color: var(--muted);
             margin-bottom: 2rem;
         }
 
@@ -171,13 +237,12 @@
         .gregorian {
             font-family: 'Crimson Text', serif;
             font-size: 0.9rem;
-            opacity: 0.5;
+            color: var(--muted);
             margin-bottom: 2rem;
         }
 
         .info-box {
             max-width: 420px;
-            margin: 0 auto;
             padding: 1rem 1.5rem;
             background: rgba(0,0,0,0.3);
             border: 1px solid rgba(201,169,110,0.15);
@@ -189,6 +254,7 @@
             opacity: 0.7;
         }
 
+        /* Complementary day classes */
         .complementary-badge {
             display: inline-block;
             padding: 0.3rem 1rem;
@@ -202,46 +268,58 @@
             margin-bottom: 1.5rem;
         }
 
-        .loading-spinner {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            width: 30px;
-            height: 30px;
-            border: 2px solid rgba(201,169,110,0.2);
-            border-top-color: var(--gold);
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-            z-index: 0;
+        .complementary-title {
+            font-size: clamp(1.8rem, 5vw, 3rem);
+            margin-bottom: 0.5rem;
         }
 
-        @keyframes spin {
-            to { transform: translate(-50%, -50%) rotate(360deg); }
+        .complementary-note {
+            margin-top: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .comp-divider {
+            margin-top: 2rem;
         }
 
         @media (max-height: 650px) {
-            .month-meaning { margin-bottom: 1rem; }
+            .month-meaning { margin-bottom: 0.5rem; }
             .day-number { font-size: clamp(3rem, 8vw, 5rem); }
-            .decade-day { margin-bottom: 1rem; }
-            .info-box { display: none; }
+            .info-box { font-size: 0.8rem; padding: 0.6rem 1rem; }
+            #content { padding: 1rem 2rem; }
+        }
+
+        @media (max-width: 768px) {
+            #content { padding: 1.5rem 2rem; }
         }
 
         @media (max-width: 480px) {
             #content { padding: 1.5rem 1rem; }
             .header-label { margin-bottom: 1.5rem; font-size: 0.75rem; }
-            .month-name { margin-bottom: 0.2rem; }
+            .date-header { flex-direction: column; gap: 0.5rem; }
+            .date-header-right { text-align: left; }
             .day-type { margin-bottom: 1.5rem; }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after {
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.01ms !important;
+            }
         }
     </style>
 </head>
 <body>
     <div id="app">
-        <div id="seasonal-bg"></div>
-        <div id="background"></div>
-        <div class="loading-spinner" id="spinner"></div>
-        <div id="overlay"></div>
-        <div id="content"></div>
+        <div id="seasonal-bg" aria-hidden="true"></div>
+        <div id="background" aria-hidden="true"></div>
+        <div class="loading-spinner" id="spinner" role="status" aria-label="Loading background image"></div>
+        <div id="overlay" aria-hidden="true"></div>
+        <main>
+            <h1 class="sr-only">Le Calendrier Républicain</h1>
+            <div id="content" aria-live="polite" aria-atomic="true"></div>
+        </main>
     </div>
 
 <script>
@@ -282,7 +360,7 @@ const DAYS = [
   // ── Brumaire ──
   [
     ["Pomme","Apple"],["Céleri","Celery"],["Poire","Pear"],
-    ["Betterave","Beetroot"],["Oie","Goose"],["Héliotrope","Heliotrope"],
+    ["Betterave","Beetroot"],["Oie","Goose"],["Laurier-thym","Laurustinus","Viburnum tinus"],
     ["Figue","Fig"],["Scorsonère","Black salsify"],["Alisier","Whitebeam"],
     ["Charrue","Plough"],["Salsifis","Salsify"],["Macre","Water caltrop","Water caltrop"],
     ["Topinambour","Jerusalem artichoke"],["Endive","Endive"],["Dindon","Turkey","Domesticated turkey"],
@@ -472,18 +550,15 @@ const DECADE_NAMES = [
     "Sextidi", "Septidi", "Octidi", "Nonidi", "Décadi"
 ];
 
-const SEASON_GRADIENTS = {
-    Autumn: "linear-gradient(160deg, #4A2511 0%, #8B4513 30%, #A0522D 60%, #6B3410 100%)",
-    Winter: "linear-gradient(160deg, #1B2838 0%, #2C3E50 30%, #34495E 60%, #1a2530 100%)",
-    Spring: "linear-gradient(160deg, #1a3a1a 0%, #2D572C 30%, #3B6B3A 60%, #1e4a1e 100%)",
-    Summer: "linear-gradient(160deg, #4A3600 0%, #7A5C00 30%, #8B6914 60%, #5A4200 100%)"
-};
+const GREG_MONTHS = [
+    "January","February","March","April","May","June",
+    "July","August","September","October","November","December"
+];
 
 
 // ─── EQUINOX CALCULATION (Meeus) ────────────────────────────────────
 
 function septemberEquinox(year) {
-    // Returns { year, month, day } of the autumnal equinox in Gregorian
     const Y = (year - 2000) / 1000;
     const JDE = 2451810.21715
         + 365242.01767 * Y
@@ -544,30 +619,33 @@ function toRepublican(gYear, gMonth, gDay) {
     }
 
     const dayOfYear = daysBetween(startEq.year, startEq.month, startEq.day, gYear, gMonth, gDay);
-    // 0-indexed: 0 = 1 Vendémiaire
 
     if (dayOfYear >= 360) {
-        // Complementary days (Sansculottides)
-        const compDay = dayOfYear - 360; // 0-indexed
+        const compDay = dayOfYear - 360;
         return {
             year: repYear,
-            month: -1, // special marker
+            month: -1,
             day: compDay + 1,
-            dayOfYear: dayOfYear,
+            dayOfYear,
             isComplementary: true
         };
     }
 
-    const month = Math.floor(dayOfYear / 30); // 0-indexed
-    const day = (dayOfYear % 30) + 1; // 1-indexed
+    const month = Math.floor(dayOfYear / 30);
+    const day = (dayOfYear % 30) + 1;
 
-    return {
-        year: repYear,
-        month: month,
-        day: day,
-        dayOfYear: dayOfYear,
-        isComplementary: false
-    };
+    return { year: repYear, month, day, dayOfYear, isComplementary: false };
+}
+
+
+// ─── REPUBLICAN LEAP YEAR ───────────────────────────────────────────
+
+function isRepublicanLeapYear(repYear) {
+    // A Republican year spanning 366 Gregorian days has 6 Sansculottides
+    const gYearStart = repYear + 1791;
+    const eq1 = septemberEquinox(gYearStart);
+    const eq2 = septemberEquinox(gYearStart + 1);
+    return daysBetween(eq1.year, eq1.month, eq1.day, eq2.year, eq2.month, eq2.day) === 366;
 }
 
 
@@ -590,6 +668,17 @@ function toRoman(num) {
 // ─── IMAGE LOADING ─────────────────────────────────────────────────
 
 async function loadImage(searchTerm) {
+    const today = new Date().toISOString().slice(0, 10);
+    const cacheKey = `frc_img_${today}`;
+
+    // Return cached URL if available
+    try {
+        const cached = localStorage.getItem(cacheKey);
+        if (cached) return cached;
+    } catch (e) { /* storage unavailable */ }
+
+    let url = null;
+
     // Try Wikimedia Commons first (better coverage for nature terms)
     try {
         const commonsUrl = `https://commons.wikimedia.org/w/api.php?action=query&generator=search&gsrsearch=${encodeURIComponent(searchTerm)}&gsrnamespace=6&gsrlimit=3&prop=imageinfo&iiprop=url|mime&iiurlwidth=1920&format=json&origin=*`;
@@ -602,9 +691,9 @@ async function loadImage(searchTerm) {
                 for (const page of pages) {
                     if (page.imageinfo && page.imageinfo[0]) {
                         const info = page.imageinfo[0];
-                        // Only use actual images, not SVGs or PDFs
                         if (info.mime && info.mime.startsWith('image/') && !info.mime.includes('svg')) {
-                            return info.thumburl || info.url;
+                            url = info.thumburl || info.url;
+                            break;
                         }
                     }
                 }
@@ -613,26 +702,45 @@ async function loadImage(searchTerm) {
     } catch (e) { /* fall through */ }
 
     // Fallback: Wikipedia page image
-    try {
-        const wikiUrl = `https://en.wikipedia.org/w/api.php?action=query&titles=${encodeURIComponent(searchTerm)}&prop=pageimages&piprop=original|thumbnail&pithumbsize=1920&format=json&origin=*`;
-        const resp = await fetch(wikiUrl);
-        if (resp.ok) {
-            const data = await resp.json();
-            const page = Object.values(data.query.pages)[0];
-            if (page && page.original) return page.original.source;
-            if (page && page.thumbnail) return page.thumbnail.source;
-        }
-    } catch (e) { /* silently fail */ }
+    if (!url) {
+        try {
+            const wikiUrl = `https://en.wikipedia.org/w/api.php?action=query&titles=${encodeURIComponent(searchTerm)}&prop=pageimages&piprop=original|thumbnail&pithumbsize=1920&format=json&origin=*`;
+            const resp = await fetch(wikiUrl);
+            if (resp.ok) {
+                const data = await resp.json();
+                const page = Object.values(data.query.pages)[0];
+                if (page && page.original) url = page.original.source;
+                else if (page && page.thumbnail) url = page.thumbnail.source;
+            }
+        } catch (e) { /* silently fail */ }
+    }
 
-    return null;
+    // Cache the result and clear stale entries
+    if (url) {
+        try {
+            for (let i = localStorage.length - 1; i >= 0; i--) {
+                const k = localStorage.key(i);
+                if (k && k.startsWith('frc_img_') && k !== cacheKey) localStorage.removeItem(k);
+            }
+            localStorage.setItem(cacheKey, url);
+        } catch (e) { /* storage full or unavailable */ }
+    }
+
+    return url;
 }
 
 function setBackgroundImage(url) {
+    // Validate URL protocol before inserting into CSS
+    try {
+        const parsed = new URL(url);
+        if (!['https:', 'http:'].includes(parsed.protocol)) return;
+    } catch (e) { return; }
+
     const bg = document.getElementById('background');
     const img = new Image();
     img.crossOrigin = "anonymous";
     img.onload = () => {
-        bg.style.backgroundImage = `url(${url})`;
+        bg.style.backgroundImage = `url("${url.replace(/"/g, '%22')}")`;
         bg.classList.add('loaded');
         document.getElementById('spinner').style.display = 'none';
     };
@@ -643,7 +751,7 @@ function setBackgroundImage(url) {
 }
 
 function setSeasonalGradient(season) {
-    document.getElementById('seasonal-bg').style.background = SEASON_GRADIENTS[season] || SEASON_GRADIENTS.Autumn;
+    document.getElementById('seasonal-bg').dataset.season = season.toLowerCase();
 }
 
 
@@ -657,12 +765,15 @@ function getDayType(monthIndex, dayNum) {
 }
 
 
-// ─── GREGORIAN MONTH NAMES ─────────────────────────────────────────
+// ─── DOM HELPERS ───────────────────────────────────────────────────
 
-const GREG_MONTHS = [
-    "January","February","March","April","May","June",
-    "July","August","September","October","November","December"
-];
+function el(tag, className, text, lang) {
+    const node = document.createElement(tag);
+    if (className) node.className = className;
+    if (text != null) node.textContent = text;
+    if (lang) node.lang = lang;
+    return node;
+}
 
 
 // ─── RENDER ────────────────────────────────────────────────────────
@@ -675,30 +786,31 @@ function render() {
 
     const rep = toRepublican(gYear, gMonth, gDay);
     const content = document.getElementById('content');
+    content.textContent = '';
 
-    let html = '';
-    html += '<div class="header-label">Le Calendrier Républicain</div>';
+    content.appendChild(el('div', 'header-label', 'Le Calendrier Républicain', 'fr'));
 
     if (rep.isComplementary) {
-        // Complementary days
         const comp = SANSCULOTTIDES[rep.day - 1];
-        const season = "Autumn"; // complementary days come at end of summer/start of autumn
-        setSeasonalGradient(season);
+        setSeasonalGradient('autumn');
+        document.title = `${comp[0]} — Le Calendrier Républicain`;
 
-        html += '<div class="complementary-badge">Jour complémentaire</div>';
-        html += `<div class="rural-name" style="font-size:clamp(1.8rem,5vw,3rem);margin-bottom:0.5rem">${comp[0]}</div>`;
-        html += `<div class="rural-english">${comp[1]}</div>`;
-        html += `<div class="day-type" style="margin-top:1rem">Sansculottide ${rep.day} of ${SANSCULOTTIDES.length <= 5 ? 5 : 6}</div>`;
+        content.appendChild(el('div', 'complementary-badge', 'Jour complémentaire', 'fr'));
+        content.appendChild(el('div', 'rural-name complementary-title', comp[0], 'fr'));
+        content.appendChild(el('div', 'rural-english', comp[1]));
 
-        html += '<div class="divider" style="margin-top:2rem"></div>';
-        html += `<div class="year-line">An ${toRoman(rep.year)} de la République</div>`;
-        html += `<div class="gregorian">${gDay} ${GREG_MONTHS[gMonth-1]} ${gYear}</div>`;
+        const total = isRepublicanLeapYear(rep.year) ? 6 : 5;
+        content.appendChild(el('div', 'day-type complementary-note', `Sansculottide ${rep.day} of ${total}`));
 
-        html += '<div class="info-box">';
-        html += 'The five (or six) complementary days, the <em>Sansculottides</em>, fall at the end of the Republican year. Each is a festival celebrating a civic virtue.';
-        html += '</div>';
+        content.appendChild(el('div', 'divider comp-divider'));
+        content.appendChild(el('div', 'year-line', `An ${toRoman(rep.year)} de la République`, 'fr'));
+        content.appendChild(el('div', 'gregorian', `${gDay} ${GREG_MONTHS[gMonth-1]} ${gYear}`));
 
-        // Try to load an image
+        const infoBox = el('div', 'info-box');
+        // Static trusted string — safe to use innerHTML for the <em> tag
+        infoBox.innerHTML = 'The five (or six) complementary days, the <em lang="fr">Sansculottides</em>, fall at the end of the Republican year. Each is a festival celebrating a civic virtue.';
+        content.appendChild(infoBox);
+
         loadImage(comp[2]).then(url => { if (url) setBackgroundImage(url); });
 
     } else {
@@ -709,33 +821,44 @@ function render() {
         const wikiTerm = dayData[2] || dayData[1];
 
         setSeasonalGradient(month.suffix);
+        document.title = `${month.fr} ${rep.day} — Le Calendrier Républicain`;
 
-        html += `<div class="month-name">${month.fr}</div>`;
-        html += `<div class="month-meaning">${month.en}</div>`;
-        html += `<div class="day-number">${rep.day}</div>`;
-        html += `<div class="decade-day">${decadeName}</div>`;
-        html += '<div class="divider"></div>';
-        html += `<div class="rural-name">${dayData[0]}</div>`;
-        html += `<div class="rural-english">${dayData[1]}</div>`;
-        html += `<div class="day-type">${dayType}</div>`;
-        html += `<div class="year-line">An ${toRoman(rep.year)} de la République</div>`;
-        html += `<div class="gregorian">${gDay} ${GREG_MONTHS[gMonth-1]} ${gYear}</div>`;
+        // Two-column header: month/meaning left, day number/decade right
+        const dateHeader = el('div', 'date-header');
 
-        // Info box
+        const left = el('div', 'date-header-left');
+        left.appendChild(el('div', 'month-name', month.fr, 'fr'));
+        left.appendChild(el('div', 'month-meaning', month.en));
+        dateHeader.appendChild(left);
+
+        const right = el('div', 'date-header-right');
+        right.appendChild(el('div', 'day-number', String(rep.day)));
+        right.appendChild(el('div', 'decade-day', decadeName, 'fr'));
+        dateHeader.appendChild(right);
+
+        content.appendChild(dateHeader);
+        content.appendChild(el('div', 'divider'));
+        content.appendChild(el('div', 'rural-name', dayData[0], 'fr'));
+        content.appendChild(el('div', 'rural-english', dayData[1]));
+        content.appendChild(el('div', 'day-type', dayType));
+        content.appendChild(el('div', 'year-line', `An ${toRoman(rep.year)} de la République`, 'fr'));
+        content.appendChild(el('div', 'gregorian', `${gDay} ${GREG_MONTHS[gMonth-1]} ${gYear}`));
+
         const dayTypeArticle = dayType === "animal day" ? "an animal"
             : dayType === "tool day" ? "an agricultural tool"
             : dayType === "mineral day" ? "a mineral"
             : "a plant";
-        html += '<div class="info-box">';
-        html += `Each day in the Republican calendar is named for an element of rural life. `;
-        html += `Today is ${dayTypeArticle} day, named for <em>${dayData[1].toLowerCase()}</em>.`;
-        html += '</div>';
 
-        // Load image
+        const infoBox = el('div', 'info-box');
+        const nameEm = document.createElement('em');
+        nameEm.textContent = dayData[1].toLowerCase();
+        infoBox.textContent = `Each day in the Republican calendar is named for an element of rural life. Today is ${dayTypeArticle} day, named for `;
+        infoBox.appendChild(nameEm);
+        infoBox.appendChild(document.createTextNode('.'));
+        content.appendChild(infoBox);
+
         loadImage(wikiTerm).then(url => { if (url) setBackgroundImage(url); });
     }
-
-    content.innerHTML = html;
 }
 
 
@@ -743,13 +866,20 @@ function render() {
 
 render();
 
-// Refresh at midnight
 function msUntilMidnight() {
     const now = new Date();
     const midnight = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
     return midnight - now;
 }
-setTimeout(() => { location.reload(); }, msUntilMidnight());
+
+function scheduleNextMidnight() {
+    setTimeout(() => {
+        render();
+        scheduleNextMidnight();
+    }, msUntilMidnight());
+}
+
+scheduleNextMidnight();
 
 </script>
 </body>
