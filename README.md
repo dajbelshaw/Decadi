@@ -4,6 +4,8 @@ A daily calendar displaying today's date in the [French Republican Calendar](htt
 
 **[décadi.com](https://dajbelshaw.github.io/Decadi)** · built by [@dajbelshaw](https://github.com/dajbelshaw)
 
+![Décadi showing 3 Germinal, An CCXXXIV — the day of Asperge (Asparagus). The screen displays the month name GERMINAL in large serif type, with the day number 3 and decade name Tridi to the right. Below, the French name Asperge and its English translation appear over a Wikimedia Commons photograph of fresh asparagus spears alongside a bowl of asparagus soup.](screenshot.png)
+
 ---
 
 ## What is the French Republican Calendar?
