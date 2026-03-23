@@ -1,0 +1,756 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Le Calendrier Républicain</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400;1,600&family=Crimson+Text:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+    <style>
+        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root {
+            --cream: #F5F0E8;
+            --gold: #C9A96E;
+            --gold-light: #D4BA85;
+            --dark: #1a1a1a;
+        }
+
+        html, body {
+            height: 100%;
+            overflow: hidden;
+            background: var(--dark);
+            color: var(--cream);
+        }
+
+        body {
+            font-family: 'Crimson Text', Georgia, serif;
+        }
+
+        #app {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        #background {
+            position: absolute;
+            inset: 0;
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            transition: opacity 1.5s ease;
+            opacity: 0;
+        }
+
+        #background.loaded {
+            opacity: 1;
+        }
+
+        #seasonal-bg {
+            position: absolute;
+            inset: 0;
+            transition: opacity 1.5s ease;
+        }
+
+        #overlay {
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(ellipse at center, rgba(0,0,0,0.35) 0%, rgba(0,0,0,0.7) 100%);
+            z-index: 1;
+        }
+
+        #content {
+            position: relative;
+            z-index: 2;
+            text-align: center;
+            padding: 2rem;
+            max-width: 700px;
+            opacity: 0;
+            transform: translateY(10px);
+            animation: fadeUp 1.2s ease 0.3s forwards;
+        }
+
+        @keyframes fadeUp {
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .header-label {
+            font-family: 'Crimson Text', serif;
+            font-size: 0.85rem;
+            letter-spacing: 0.25em;
+            text-transform: uppercase;
+            color: var(--gold-light);
+            margin-bottom: 2.5rem;
+            opacity: 0.85;
+        }
+
+        .month-name {
+            font-family: 'Playfair Display', serif;
+            font-size: clamp(2.5rem, 6vw, 4.5rem);
+            font-weight: 600;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            line-height: 1.1;
+            margin-bottom: 0.3rem;
+        }
+
+        .month-meaning {
+            font-family: 'Crimson Text', serif;
+            font-style: italic;
+            font-size: 1.15rem;
+            color: var(--gold-light);
+            margin-bottom: 2rem;
+            opacity: 0.9;
+        }
+
+        .day-number {
+            font-family: 'Playfair Display', serif;
+            font-size: clamp(4rem, 12vw, 8rem);
+            font-weight: 700;
+            line-height: 1;
+            margin-bottom: 0.1rem;
+        }
+
+        .decade-day {
+            font-family: 'Crimson Text', serif;
+            font-size: 1.1rem;
+            letter-spacing: 0.15em;
+            text-transform: uppercase;
+            color: var(--gold-light);
+            margin-bottom: 2rem;
+            opacity: 0.85;
+        }
+
+        .divider {
+            width: 60px;
+            height: 1px;
+            background: var(--gold);
+            margin: 0 auto 1.2rem;
+            opacity: 0.6;
+        }
+
+        .rural-name {
+            font-family: 'Playfair Display', serif;
+            font-size: clamp(1.5rem, 4vw, 2.2rem);
+            font-weight: 600;
+            font-style: italic;
+            margin-bottom: 0.3rem;
+        }
+
+        .rural-english {
+            font-family: 'Crimson Text', serif;
+            font-size: 1.05rem;
+            color: var(--gold-light);
+            margin-bottom: 0.35rem;
+            opacity: 0.9;
+        }
+
+        .day-type {
+            font-family: 'Crimson Text', serif;
+            font-size: 0.85rem;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            color: var(--cream);
+            opacity: 0.5;
+            margin-bottom: 2rem;
+        }
+
+        .year-line {
+            font-family: 'Playfair Display', serif;
+            font-size: 1rem;
+            letter-spacing: 0.12em;
+            margin-bottom: 0.4rem;
+            opacity: 0.8;
+        }
+
+        .gregorian {
+            font-family: 'Crimson Text', serif;
+            font-size: 0.9rem;
+            opacity: 0.5;
+            margin-bottom: 2rem;
+        }
+
+        .info-box {
+            max-width: 420px;
+            margin: 0 auto;
+            padding: 1rem 1.5rem;
+            background: rgba(0,0,0,0.3);
+            border: 1px solid rgba(201,169,110,0.15);
+            border-radius: 4px;
+            font-family: 'Crimson Text', serif;
+            font-size: 0.9rem;
+            line-height: 1.6;
+            color: var(--cream);
+            opacity: 0.7;
+        }
+
+        .complementary-badge {
+            display: inline-block;
+            padding: 0.3rem 1rem;
+            border: 1px solid var(--gold);
+            border-radius: 2px;
+            font-family: 'Crimson Text', serif;
+            font-size: 0.85rem;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            color: var(--gold);
+            margin-bottom: 1.5rem;
+        }
+
+        .loading-spinner {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 30px;
+            height: 30px;
+            border: 2px solid rgba(201,169,110,0.2);
+            border-top-color: var(--gold);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            z-index: 0;
+        }
+
+        @keyframes spin {
+            to { transform: translate(-50%, -50%) rotate(360deg); }
+        }
+
+        @media (max-height: 650px) {
+            .month-meaning { margin-bottom: 1rem; }
+            .day-number { font-size: clamp(3rem, 8vw, 5rem); }
+            .decade-day { margin-bottom: 1rem; }
+            .info-box { display: none; }
+        }
+
+        @media (max-width: 480px) {
+            #content { padding: 1.5rem 1rem; }
+            .header-label { margin-bottom: 1.5rem; font-size: 0.75rem; }
+            .month-name { margin-bottom: 0.2rem; }
+            .day-type { margin-bottom: 1.5rem; }
+        }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <div id="seasonal-bg"></div>
+        <div id="background"></div>
+        <div class="loading-spinner" id="spinner"></div>
+        <div id="overlay"></div>
+        <div id="content"></div>
+    </div>
+
+<script>
+// ─── DATA ───────────────────────────────────────────────────────────
+
+const MONTHS = [
+    { fr: "Vendémiaire", en: "the month of vintage", suffix: "Autumn" },
+    { fr: "Brumaire",    en: "the month of fog",     suffix: "Autumn" },
+    { fr: "Frimaire",    en: "the month of frost",   suffix: "Autumn" },
+    { fr: "Nivôse",      en: "the month of snow",    suffix: "Winter" },
+    { fr: "Pluviôse",    en: "the month of rain",    suffix: "Winter" },
+    { fr: "Ventôse",     en: "the month of wind",    suffix: "Winter" },
+    { fr: "Germinal",    en: "the month of sprouting", suffix: "Spring" },
+    { fr: "Floréal",     en: "the month of flowers", suffix: "Spring" },
+    { fr: "Prairial",    en: "the month of meadows", suffix: "Spring" },
+    { fr: "Messidor",    en: "the month of harvest", suffix: "Summer" },
+    { fr: "Thermidor",   en: "the month of heat",    suffix: "Summer" },
+    { fr: "Fructidor",   en: "the month of fruits",  suffix: "Summer" }
+];
+
+// Each sub-array = one month, 30 entries of [frenchName, englishName, wikiSearchTerm?]
+// wikiSearchTerm overrides englishName for image search when needed.
+const DAYS = [
+  // ── Vendémiaire ──
+  [
+    ["Raisin","Grape"],["Safran","Saffron"],["Châtaigne","Chestnut"],
+    ["Colchique","Colchicum"],["Cheval","Horse"],["Balsamine","Balsam plant","Impatiens"],
+    ["Carotte","Carrot"],["Amaranthe","Amaranth"],["Panais","Parsnip"],
+    ["Cuve","Vat","Wine barrel cellar"],["Pomme de terre","Potato"],["Immortelle","Strawflower"],
+    ["Potiron","Pumpkin"],["Réséda","Mignonette","Reseda (plant)"],["Âne","Donkey"],
+    ["Belle de nuit","Four o'clock flower","Mirabilis jalapa"],["Citrouille","Squash","Cucurbita"],
+    ["Sarrasin","Buckwheat"],["Tournesol","Sunflower"],["Pressoir","Wine press","Wine press grape"],
+    ["Chanvre","Hemp"],["Pêche","Peach"],["Navet","Turnip"],
+    ["Amaryllis","Amaryllis"],["Bœuf","Ox","Cattle"],["Aubergine","Aubergine","Eggplant"],
+    ["Piment","Chilli pepper","Chili pepper"],["Tomate","Tomato"],["Orge","Barley"],
+    ["Tonneau","Barrel"]
+  ],
+  // ── Brumaire ──
+  [
+    ["Pomme","Apple"],["Céleri","Celery"],["Poire","Pear"],
+    ["Betterave","Beetroot"],["Oie","Goose"],["Héliotrope","Heliotrope"],
+    ["Figue","Fig"],["Scorsonère","Black salsify"],["Alisier","Whitebeam"],
+    ["Charrue","Plough"],["Salsifis","Salsify"],["Macre","Water caltrop","Water caltrop"],
+    ["Topinambour","Jerusalem artichoke"],["Endive","Endive"],["Dindon","Turkey","Domesticated turkey"],
+    ["Chervis","Skirret"],["Cresson","Watercress"],["Dentelaire","Leadwort","Plumbago"],
+    ["Grenade","Pomegranate"],["Herse","Harrow","Harrow (tool)"],
+    ["Bacchante","Baccharis","Baccharis"],["Azérole","Azarole","Crataegus azarolus"],
+    ["Garance","Madder","Rubia"],["Orange","Orange (fruit)"],["Faisan","Pheasant"],
+    ["Pistache","Pistachio"],["Macjonc","Tuberous pea","Lathyrus tuberosus"],
+    ["Coing","Quince"],["Cormier","Service tree","Sorbus domestica"],["Rouleau","Roller","Lawn roller"]
+  ],
+  // ── Frimaire ──
+  [
+    ["Raiponce","Rampion","Campanula rapunculus"],["Turneps","Turnip"],["Chicorée","Chicory"],
+    ["Nèfle","Medlar"],["Cochon","Pig"],["Mâche","Corn salad","Valerianella locusta"],
+    ["Chou-fleur","Cauliflower"],["Miel","Honey"],["Genièvre","Juniper"],
+    ["Pioche","Pickaxe"],["Cire","Beeswax"],["Raifort","Horseradish"],
+    ["Cèdre","Cedar"],["Sapin","Fir","Fir"],["Chevreuil","Roe deer"],
+    ["Ajonc","Gorse"],["Cyprès","Cypress"],["Lierre","Ivy"],
+    ["Sabine","Savin juniper","Juniperus sabina"],["Hoyau","Grub hoe","Hoe (tool)"],
+    ["Érable sucré","Sugar maple"],["Bruyère","Heather"],["Roseau","Reed","Phragmites"],
+    ["Oseille","Sorrel"],["Grillon","Cricket","Cricket (insect)"],["Pignon","Pine nut"],
+    ["Liège","Cork (material)"],["Truffe","Truffle"],["Olive","Olive"],["Pelle","Shovel"]
+  ],
+  // ── Nivôse ──
+  [
+    ["Tourbe","Peat"],["Houille","Coal"],["Bitume","Bitumen"],
+    ["Soufre","Sulphur"],["Chien","Dog"],["Lave","Lava"],
+    ["Terre végétale","Topsoil"],["Fumier","Manure"],["Salpêtre","Saltpetre","Potassium nitrate"],
+    ["Fléau","Flail","Flail (agriculture)"],["Granit","Granite"],["Argile","Clay"],
+    ["Ardoise","Slate"],["Grès","Sandstone"],["Lapin","Rabbit"],
+    ["Silex","Flint"],["Marne","Ite","Marl"],["Pierre à chaux","Ite","Limestone"],
+    ["Marbre","Marble"],["Van","Winnowing","Winnowing"],
+    ["Pierre à plâtre","Gypsum"],["Sel","Salt"],["Fer","Iron"],
+    ["Cuivre","Copper"],["Chat","Cat"],["Étain","Tin"],
+    ["Plomb","Lead"],["Zinc","Zinc"],["Mercure","Mercury (element)"],
+    ["Crible","Sieve"]
+  ],
+  // ── Pluviôse ──
+  [
+    ["Lauréole","Spurge laurel","Daphne laureola"],["Mousse","Moss"],
+    ["Fragon","Butcher's broom","Ruscus aculeatus"],["Perce-neige","Snowdrop","Galanthus"],
+    ["Taureau","Bull"],["Laurier-thym","Bay laurel"],
+    ["Amadouvier","Tinder fungus","Fomes fomentarius"],["Mézéréon","Mezereon","Daphne mezereum"],
+    ["Peuplier","Poplar"],["Coignée","Axe"],
+    ["Ellébore","Hellebore"],["Brocoli","Broccoli"],["Laurier","Bay laurel"],
+    ["Avelinier","Hazel","Corylus"],["Vache","Cow"],
+    ["Buis","Box tree","Buxus"],["Lichen","Lichen"],["If","Yew","Taxus baccata"],
+    ["Pulmonaire","Lungwort"],["Serpette","Pruning knife","Billhook"],
+    ["Thlaspi","Pennycress"],["Thymélée","Thymelaea"],
+    ["Chiendent","Couch grass","Elymus repens"],["Traînasse","Knotgrass","Polygonum aviculare"],
+    ["Lièvre","Hare"],["Guède","Woad","Isatis tinctoria"],["Noisetier","Hazel"],
+    ["Cyclamen","Cyclamen"],["Chélidoine","Celandine","Chelidonium"],
+    ["Traîneau","Sleigh"]
+  ],
+  // ── Ventôse ──
+  [
+    ["Tussilage","Coltsfoot"],["Cornouiller","Dogwood","Cornus (plant)"],
+    ["Violier","Wallflower","Erysimum"],["Troène","Privet"],["Bouc","Goat"],
+    ["Asaret","Asarabacca","Asarum europaeum"],["Alaterne","Buckthorn","Rhamnus alaternus"],
+    ["Violette","Violet (plant)","Viola (plant)"],["Marceau","Goat willow","Salix caprea"],
+    ["Bêche","Spade","Spade (tool)"],["Narcisse","Narcissus (plant)"],["Orme","Elm"],
+    ["Fumeterre","Fumitory","Fumaria"],["Vélar","Hedge mustard","Sisymbrium"],
+    ["Chèvre","Goat"],["Épinard","Spinach"],
+    ["Doronic","Leopard's bane","Doronicum"],["Mouron","Pimpernel","Anagallis"],
+    ["Cerfeuil","Chervil"],["Cordeau","Garden line","Garden line"],
+    ["Mandragore","Mandrake","Mandragora"],["Persil","Parsley"],
+    ["Cochléaria","Scurvygrass","Cochlearia"],["Pâquerette","Daisy","Bellis perennis"],
+    ["Thon","Tuna"],["Pissenlit","Dandelion"],
+    ["Sylve","Forest"],["Capillaire","Maidenhair fern","Adiantum"],
+    ["Frêne","Ash tree","Fraxinus"],["Plantoir","Dibber"]
+  ],
+  // ── Germinal ──
+  [
+    ["Primevère","Primrose"],["Platane","Plane tree","Platanus"],
+    ["Asperge","Asparagus"],["Tulipe","Tulip"],["Poule","Hen","Chicken"],
+    ["Bette","Chard","Chard"],["Bouleau","Birch"],
+    ["Jonquille","Daffodil"],["Aulne","Alder"],["Couvoir","Incubator","Egg incubator"],
+    ["Pervenche","Periwinkle","Vinca"],["Charme","Hornbeam","Carpinus"],
+    ["Morille","Morel","Morchella"],["Hêtre","Beech"],["Abeille","Bee","Honey bee"],
+    ["Laitue","Lettuce"],["Mélèze","Larch"],["Ciguë","Hemlock","Conium"],
+    ["Radis","Radish"],["Ruche","Beehive"],
+    ["Gainier","Judas tree","Cercis siliquastrum"],["Romaine","Lettuce","Romaine lettuce"],
+    ["Marronnier","Horse chestnut","Aesculus hippocastanum"],
+    ["Roquette","Rocket","Eruca vesicaria"],["Pigeon","Pigeon"],
+    ["Lilas","Lilac","Syringa"],["Anémone","Anemone"],
+    ["Pensée","Pansy"],["Myrtille","Blueberry"],["Greffoir","Grafting knife","Grafting"]
+  ],
+  // ── Floréal ──
+  [
+    ["Rose","Rose"],["Chêne","Oak"],["Fougère","Fern"],
+    ["Aubépine","Hawthorn"],["Rossignol","Nightingale"],
+    ["Ancolie","Columbine","Aquilegia"],["Muguet","Lily of the valley"],
+    ["Champignon","Mushroom"],["Hyacinthe","Hyacinth (plant)","Hyacinthus"],
+    ["Râteau","Rake","Rake (tool)"],["Rhubarbe","Rhubarb"],
+    ["Sainfoin","Sainfoin"],["Bâton d'or","Wallflower","Erysimum cheiri"],
+    ["Chamérisier","Honeysuckle","Lonicera"],["Ver à soie","Silkworm","Bombyx mori"],
+    ["Consoude","Comfrey","Symphytum"],["Pimprenelle","Burnet","Sanguisorba"],
+    ["Corbeille d'or","Basket of gold","Aurinia saxatilis"],
+    ["Arroche","Orache","Atriplex"],["Sarcloir","Hoe","Hoe (tool)"],
+    ["Statice","Sea lavender","Limonium"],["Fritillaire","Fritillary","Fritillaria"],
+    ["Bourrache","Borage"],["Valériane","Valerian (herb)","Valeriana"],
+    ["Carpe","Carp"],["Fusain","Spindle tree","Euonymus"],
+    ["Civette","Chives"],["Buglosse","Bugloss","Anchusa"],
+    ["Sénevé","Mustard seed","Mustard plant"],["Houlette","Shepherd's crook","Pastoral staff"]
+  ],
+  // ── Prairial ──
+  [
+    ["Luzerne","Alfalfa"],["Hémérocalle","Daylily","Hemerocallis"],
+    ["Trèfle","Clover"],["Angélique","Angelica"],["Canard","Duck"],
+    ["Mélisse","Lemon balm","Melissa officinalis"],["Fromental","Oat grass","Arrhenatherum"],
+    ["Martagon","Martagon lily","Lilium martagon"],["Serpolet","Wild thyme","Thymus serpyllum"],
+    ["Faux","Scythe"],["Fraise","Strawberry"],
+    ["Bétoine","Betony","Betonica officinalis"],["Pois","Pea","Pea"],
+    ["Acacia","Acacia"],["Caille","Quail"],
+    ["Œillet","Carnation","Dianthus"],["Sureau","Elderberry","Sambucus"],
+    ["Pavot","Poppy"],["Tilleul","Linden tree","Tilia"],
+    ["Fourche","Pitchfork"],["Barbeau","Cornflower","Centaurea cyanus"],
+    ["Camomille","Chamomile"],["Chèvrefeuille","Honeysuckle"],
+    ["Caille-lait","Bedstraw","Galium"],["Tanche","Tench"],
+    ["Jasmin","Jasmine"],["Verveine","Verbena"],
+    ["Thym","Thyme"],["Pivoine","Peony"],["Chariot","Cart","Ox cart"]
+  ],
+  // ── Messidor ──
+  [
+    ["Seigle","Rye"],["Avoine","Oat"],["Oignon","Onion"],
+    ["Véronique","Speedwell","Veronica (plant)"],["Mulet","Mule"],
+    ["Romarin","Rosemary"],["Concombre","Cucumber"],
+    ["Échalote","Shallot"],["Absinthe","Wormwood","Artemisia absinthium"],
+    ["Faucille","Sickle"],["Coriandre","Coriander"],
+    ["Artichaut","Artichoke","Globe artichoke"],["Girofle","Clove"],
+    ["Lavande","Lavender"],["Chamois","Chamois"],
+    ["Tabac","Tobacco"],["Groseille","Redcurrant"],
+    ["Gesse","Sweet pea","Lathyrus"],["Cerise","Cherry"],
+    ["Parc","Enclosure","Livestock pen"],["Menthe","Mint"],
+    ["Cumin","Cumin"],["Haricot","Bean","Common bean"],
+    ["Orcanète","Alkanet","Alkanna tinctoria"],["Pintade","Guinea fowl"],
+    ["Sauge","Sage","Salvia officinalis"],["Ail","Garlic"],
+    ["Vesce","Vetch","Vicia"],["Blé","Wheat"],["Chalémie","Shawm"]
+  ],
+  // ── Thermidor ──
+  [
+    ["Épeautre","Spelt"],["Bouillon-blanc","Mullein","Verbascum"],
+    ["Melon","Melon"],["Ivraie","Darnel","Lolium temulentum"],["Bélier","Ram","Domestic sheep"],
+    ["Prêle","Horsetail","Equisetum"],["Armoise","Mugwort","Artemisia vulgaris"],
+    ["Carthame","Safflower"],["Mûre","Blackberry"],
+    ["Arrosoir","Watering can"],["Panis","Millet","Proso millet"],
+    ["Salicorne","Samphire","Salicornia"],["Abricot","Apricot"],
+    ["Basilic","Basil"],["Brebis","Ewe","Domestic sheep"],
+    ["Guimauve","Marshmallow plant","Althaea officinalis"],["Lin","Flax","Linum usitatissimum"],
+    ["Amande","Almond"],["Gentiane","Gentian"],
+    ["Écluse","Lock","Lock (water navigation)"],["Carline","Carline thistle","Carlina"],
+    ["Câprier","Caper","Capparis spinosa"],["Lentille","Lentil"],
+    ["Aunée","Elecampane","Inula helenium"],["Loutre","Otter"],
+    ["Myrte","Myrtle"],["Colza","Rapeseed"],
+    ["Lupin","Lupin","Lupinus"],["Coton","Cotton"],["Moulin","Windmill"]
+  ],
+  // ── Fructidor ──
+  [
+    ["Prune","Plum"],["Millet","Millet"],["Lycoperdon","Puffball","Lycoperdon"],
+    ["Escourgeon","Winter barley","Barley"],["Saumon","Salmon"],
+    ["Tubéreuse","Tuberose","Polianthes tuberosa"],["Sucrion","Barley","Barley"],
+    ["Apocyn","Dogbane","Apocynum"],["Réglisse","Liquorice"],
+    ["Échelle","Ladder"],["Pastèque","Watermelon"],
+    ["Fenouil","Fennel"],["Épine-vinette","Barberry","Berberis"],
+    ["Noix","Walnut"],["Truite","Trout"],
+    ["Citron","Lemon"],["Cardère","Teasel","Dipsacus"],
+    ["Nerprun","Buckthorn","Rhamnus"],["Tagette","Marigold","Tagetes"],
+    ["Hotte","Basket","Basket"],["Églantier","Dog rose","Rosa canina"],
+    ["Noisette","Hazelnut"],["Houblon","Hops","Humulus"],
+    ["Sorgho","Sorghum"],["Écrevisse","Crayfish"],
+    ["Bigarade","Bitter orange","Bitter orange"],["Verge d'or","Goldenrod","Solidago"],
+    ["Maïs","Maize"],["Marron","Chestnut"],["Panier","Basket","Wicker basket"]
+  ]
+];
+
+const SANSCULOTTIDES = [
+    ["Fête de la Vertu", "Day of Virtue", "Virtue"],
+    ["Fête du Génie", "Day of Genius", "Genius"],
+    ["Fête du Travail", "Day of Labour", "Labour"],
+    ["Fête de l'Opinion", "Day of Opinion", "Opinion"],
+    ["Fête des Récompenses", "Day of Rewards", "Reward"],
+    ["Fête de la Révolution", "Day of the Revolution", "French Revolution"]
+];
+
+const DECADE_NAMES = [
+    "Primidi", "Duodi", "Tridi", "Quartidi", "Quintidi",
+    "Sextidi", "Septidi", "Octidi", "Nonidi", "Décadi"
+];
+
+const SEASON_GRADIENTS = {
+    Autumn: "linear-gradient(160deg, #4A2511 0%, #8B4513 30%, #A0522D 60%, #6B3410 100%)",
+    Winter: "linear-gradient(160deg, #1B2838 0%, #2C3E50 30%, #34495E 60%, #1a2530 100%)",
+    Spring: "linear-gradient(160deg, #1a3a1a 0%, #2D572C 30%, #3B6B3A 60%, #1e4a1e 100%)",
+    Summer: "linear-gradient(160deg, #4A3600 0%, #7A5C00 30%, #8B6914 60%, #5A4200 100%)"
+};
+
+
+// ─── EQUINOX CALCULATION (Meeus) ────────────────────────────────────
+
+function septemberEquinox(year) {
+    // Returns { year, month, day } of the autumnal equinox in Gregorian
+    const Y = (year - 2000) / 1000;
+    const JDE = 2451810.21715
+        + 365242.01767 * Y
+        - 11.37220 * Y * Y
+        + 0.00488 * Y * Y * Y
+        + 0.00325 * Y * Y * Y * Y;
+    return jdToGregorian(JDE);
+}
+
+function jdToGregorian(JD) {
+    const z = Math.floor(JD + 0.5);
+    const f = JD + 0.5 - z;
+    let a;
+    if (z < 2299161) {
+        a = z;
+    } else {
+        const alpha = Math.floor((z - 1867216.25) / 36524.25);
+        a = z + 1 + alpha - Math.floor(alpha / 4);
+    }
+    const b = a + 1524;
+    const c = Math.floor((b - 122.1) / 365.25);
+    const d = Math.floor(365.25 * c);
+    const e = Math.floor((b - d) / 30.6001);
+    const day = b - d - Math.floor(30.6001 * e);
+    const month = e < 14 ? e - 1 : e - 13;
+    const yr = month > 2 ? c - 4716 : c - 4715;
+    return { year: yr, month, day };
+}
+
+function gregorianToJD(year, month, day) {
+    if (month <= 2) { year--; month += 12; }
+    const A = Math.floor(year / 100);
+    const B = 2 - A + Math.floor(A / 4);
+    return Math.floor(365.25 * (year + 4716))
+         + Math.floor(30.6001 * (month + 1))
+         + day + B - 1524.5;
+}
+
+function daysBetween(y1, m1, d1, y2, m2, d2) {
+    return Math.round(gregorianToJD(y2, m2, d2) - gregorianToJD(y1, m1, d1));
+}
+
+
+// ─── GREGORIAN → REPUBLICAN CONVERSION ────────────────────────────
+
+function toRepublican(gYear, gMonth, gDay) {
+    const eqThis = septemberEquinox(gYear);
+    const eqPrev = septemberEquinox(gYear - 1);
+
+    let repYear, startEq;
+    const dThis = daysBetween(eqThis.year, eqThis.month, eqThis.day, gYear, gMonth, gDay);
+    if (dThis >= 0) {
+        repYear = gYear - 1791;
+        startEq = eqThis;
+    } else {
+        repYear = gYear - 1792;
+        startEq = eqPrev;
+    }
+
+    const dayOfYear = daysBetween(startEq.year, startEq.month, startEq.day, gYear, gMonth, gDay);
+    // 0-indexed: 0 = 1 Vendémiaire
+
+    if (dayOfYear >= 360) {
+        // Complementary days (Sansculottides)
+        const compDay = dayOfYear - 360; // 0-indexed
+        return {
+            year: repYear,
+            month: -1, // special marker
+            day: compDay + 1,
+            dayOfYear: dayOfYear,
+            isComplementary: true
+        };
+    }
+
+    const month = Math.floor(dayOfYear / 30); // 0-indexed
+    const day = (dayOfYear % 30) + 1; // 1-indexed
+
+    return {
+        year: repYear,
+        month: month,
+        day: day,
+        dayOfYear: dayOfYear,
+        isComplementary: false
+    };
+}
+
+
+// ─── ROMAN NUMERALS ────────────────────────────────────────────────
+
+function toRoman(num) {
+    const vals = [1000,900,500,400,100,90,50,40,10,9,5,4,1];
+    const syms = ["M","CM","D","CD","C","XC","L","XL","X","IX","V","IV","I"];
+    let result = "";
+    for (let i = 0; i < vals.length; i++) {
+        while (num >= vals[i]) {
+            result += syms[i];
+            num -= vals[i];
+        }
+    }
+    return result;
+}
+
+
+// ─── IMAGE LOADING ─────────────────────────────────────────────────
+
+async function loadImage(searchTerm) {
+    // Try Wikimedia Commons first (better coverage for nature terms)
+    try {
+        const commonsUrl = `https://commons.wikimedia.org/w/api.php?action=query&generator=search&gsrsearch=${encodeURIComponent(searchTerm)}&gsrnamespace=6&gsrlimit=3&prop=imageinfo&iiprop=url|mime&iiurlwidth=1920&format=json&origin=*`;
+        const resp = await fetch(commonsUrl);
+        if (resp.ok) {
+            const data = await resp.json();
+            if (data.query && data.query.pages) {
+                const pages = Object.values(data.query.pages)
+                    .sort((a, b) => (a.index || 0) - (b.index || 0));
+                for (const page of pages) {
+                    if (page.imageinfo && page.imageinfo[0]) {
+                        const info = page.imageinfo[0];
+                        // Only use actual images, not SVGs or PDFs
+                        if (info.mime && info.mime.startsWith('image/') && !info.mime.includes('svg')) {
+                            return info.thumburl || info.url;
+                        }
+                    }
+                }
+            }
+        }
+    } catch (e) { /* fall through */ }
+
+    // Fallback: Wikipedia page image
+    try {
+        const wikiUrl = `https://en.wikipedia.org/w/api.php?action=query&titles=${encodeURIComponent(searchTerm)}&prop=pageimages&piprop=original|thumbnail&pithumbsize=1920&format=json&origin=*`;
+        const resp = await fetch(wikiUrl);
+        if (resp.ok) {
+            const data = await resp.json();
+            const page = Object.values(data.query.pages)[0];
+            if (page && page.original) return page.original.source;
+            if (page && page.thumbnail) return page.thumbnail.source;
+        }
+    } catch (e) { /* silently fail */ }
+
+    return null;
+}
+
+function setBackgroundImage(url) {
+    const bg = document.getElementById('background');
+    const img = new Image();
+    img.crossOrigin = "anonymous";
+    img.onload = () => {
+        bg.style.backgroundImage = `url(${url})`;
+        bg.classList.add('loaded');
+        document.getElementById('spinner').style.display = 'none';
+    };
+    img.onerror = () => {
+        document.getElementById('spinner').style.display = 'none';
+    };
+    img.src = url;
+}
+
+function setSeasonalGradient(season) {
+    document.getElementById('seasonal-bg').style.background = SEASON_GRADIENTS[season] || SEASON_GRADIENTS.Autumn;
+}
+
+
+// ─── DAY TYPE ──────────────────────────────────────────────────────
+
+function getDayType(monthIndex, dayNum) {
+    if (dayNum % 10 === 0) return "tool day";
+    if (dayNum % 10 === 5) return "animal day";
+    if (monthIndex === 3) return "mineral day"; // Nivôse
+    return "plant day";
+}
+
+
+// ─── GREGORIAN MONTH NAMES ─────────────────────────────────────────
+
+const GREG_MONTHS = [
+    "January","February","March","April","May","June",
+    "July","August","September","October","November","December"
+];
+
+
+// ─── RENDER ────────────────────────────────────────────────────────
+
+function render() {
+    const now = new Date();
+    const gYear = now.getFullYear();
+    const gMonth = now.getMonth() + 1;
+    const gDay = now.getDate();
+
+    const rep = toRepublican(gYear, gMonth, gDay);
+    const content = document.getElementById('content');
+
+    let html = '';
+    html += '<div class="header-label">Le Calendrier Républicain</div>';
+
+    if (rep.isComplementary) {
+        // Complementary days
+        const comp = SANSCULOTTIDES[rep.day - 1];
+        const season = "Autumn"; // complementary days come at end of summer/start of autumn
+        setSeasonalGradient(season);
+
+        html += '<div class="complementary-badge">Jour complémentaire</div>';
+        html += `<div class="rural-name" style="font-size:clamp(1.8rem,5vw,3rem);margin-bottom:0.5rem">${comp[0]}</div>`;
+        html += `<div class="rural-english">${comp[1]}</div>`;
+        html += `<div class="day-type" style="margin-top:1rem">Sansculottide ${rep.day} of ${SANSCULOTTIDES.length <= 5 ? 5 : 6}</div>`;
+
+        html += '<div class="divider" style="margin-top:2rem"></div>';
+        html += `<div class="year-line">An ${toRoman(rep.year)} de la République</div>`;
+        html += `<div class="gregorian">${gDay} ${GREG_MONTHS[gMonth-1]} ${gYear}</div>`;
+
+        html += '<div class="info-box">';
+        html += 'The five (or six) complementary days, the <em>Sansculottides</em>, fall at the end of the Republican year. Each is a festival celebrating a civic virtue.';
+        html += '</div>';
+
+        // Try to load an image
+        loadImage(comp[2]).then(url => { if (url) setBackgroundImage(url); });
+
+    } else {
+        const month = MONTHS[rep.month];
+        const dayData = DAYS[rep.month][rep.day - 1];
+        const decadeName = DECADE_NAMES[(rep.day - 1) % 10];
+        const dayType = getDayType(rep.month, rep.day);
+        const wikiTerm = dayData[2] || dayData[1];
+
+        setSeasonalGradient(month.suffix);
+
+        html += `<div class="month-name">${month.fr}</div>`;
+        html += `<div class="month-meaning">${month.en}</div>`;
+        html += `<div class="day-number">${rep.day}</div>`;
+        html += `<div class="decade-day">${decadeName}</div>`;
+        html += '<div class="divider"></div>';
+        html += `<div class="rural-name">${dayData[0]}</div>`;
+        html += `<div class="rural-english">${dayData[1]}</div>`;
+        html += `<div class="day-type">${dayType}</div>`;
+        html += `<div class="year-line">An ${toRoman(rep.year)} de la République</div>`;
+        html += `<div class="gregorian">${gDay} ${GREG_MONTHS[gMonth-1]} ${gYear}</div>`;
+
+        // Info box
+        const dayTypeArticle = dayType === "animal day" ? "an animal"
+            : dayType === "tool day" ? "an agricultural tool"
+            : dayType === "mineral day" ? "a mineral"
+            : "a plant";
+        html += '<div class="info-box">';
+        html += `Each day in the Republican calendar is named for an element of rural life. `;
+        html += `Today is ${dayTypeArticle} day, named for <em>${dayData[1].toLowerCase()}</em>.`;
+        html += '</div>';
+
+        // Load image
+        loadImage(wikiTerm).then(url => { if (url) setBackgroundImage(url); });
+    }
+
+    content.innerHTML = html;
+}
+
+
+// ─── INITIALISE ────────────────────────────────────────────────────
+
+render();
+
+// Refresh at midnight
+function msUntilMidnight() {
+    const now = new Date();
+    const midnight = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
+    return midnight - now;
+}
+setTimeout(() => { location.reload(); }, msUntilMidnight());
+
+</script>
+</body>
+</html>
