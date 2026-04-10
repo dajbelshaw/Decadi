@@ -1,0 +1,43 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <!-- Dark background -->
+  <rect width="512" height="512" rx="80" fill="#1a1a1a"/>
+
+  <!-- Subtle seasonal gradient overlay (spring green tones) -->
+  <radialGradient id="bg" cx="50%" cy="60%" r="70%">
+    <stop offset="0%" stop-color="#2D572C" stop-opacity="0.6"/>
+    <stop offset="100%" stop-color="#1a1a1a" stop-opacity="0"/>
+  </radialGradient>
+  <rect width="512" height="512" rx="80" fill="url(#bg)"/>
+
+  <!-- Gold top rule -->
+  <rect x="64" y="116" width="384" height="2" fill="#C9A96E"/>
+
+  <!-- Large day number "X" (10 = Décadi) -->
+  <text
+    x="256"
+    y="270"
+    font-family="Georgia, 'Times New Roman', serif"
+    font-size="220"
+    font-weight="700"
+    fill="#F5F0E8"
+    text-anchor="middle"
+    dominant-baseline="middle"
+    letter-spacing="-4"
+  >X</text>
+
+  <!-- Gold bottom rule -->
+  <rect x="64" y="394" width="384" height="2" fill="#C9A96E"/>
+
+  <!-- "DÉCADI" label between rules and bottom edge -->
+  <text
+    x="256"
+    y="448"
+    font-family="Georgia, 'Times New Roman', serif"
+    font-size="42"
+    font-weight="400"
+    fill="#C9A96E"
+    text-anchor="middle"
+    dominant-baseline="middle"
+    letter-spacing="8"
+  >DÉCADI</text>
+</svg>
